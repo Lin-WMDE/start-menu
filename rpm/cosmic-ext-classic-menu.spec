@@ -1,5 +1,5 @@
 Name:           cosmic-ext-classic-menu
-Version:        0.0.10
+Version:        0.0.11
 Release:        1%{?dist}
 Summary:        Classic Menu Applet
 
@@ -36,6 +36,10 @@ just rootdir=%{buildroot} install
 %{_datadir}/cosmic/com.championpeak87.cosmic-ext-classic-menu/applet-buttons/*
 
 %changelog
+* Mon Dec 27 2025 Kamil Lihan <k.lihan@outlook.com> 0.0.11-1
+- Fixed issue with flatpak applications not showing up in the list
+- Added support for NixOS
+
 * Mon Nov 24 2025 Kamil Lihan <k.lihan@outlook.com> 0.0.10-1
 - Rename to Classic Menu
 - Update manifest file

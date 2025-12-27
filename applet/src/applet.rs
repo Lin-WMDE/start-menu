@@ -130,7 +130,10 @@ impl SystemTool {
         // Logic to determine the final command and arguments, centralizing Flatpak handling
         let (main_exec, args) = if is_flatpak {
             // For Flatpak, use `flatpak-spawn` with the `--host` argument
-            ("flatpak-spawn", vec!["--host", exec_name])
+            (
+                "flatpak-spawn",
+                vec!["--host", "/bin/sh", "-l", "-c", exec_name],
+            )
         } else {
             // For native, use the direct executable name
             (exec_name, vec![])
@@ -143,7 +146,7 @@ impl SystemTool {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum PowerAction {
     Shutdown,
     Logout,
@@ -447,29 +450,38 @@ impl Applet {
 
     fn perform_power_action(&mut self, action: PowerAction) -> Task<Message> {
         let is_flatpak = std::env::var("FLATPAK_ID").is_ok();
-        let main_exec = if is_flatpak {
-            "flatpak-spawn"
-        } else {
-            "cosmic-osd"
+
+        if action == PowerAction::Lock || action == PowerAction::Suspend {
+            return action.perform();
+        }
+
+        let power_action = match action {
+            PowerAction::Logout => "log-out",
+            PowerAction::Reboot => "restart",
+            PowerAction::Shutdown => "shutdown",
+            _ => "",
         };
-        let mut args = if is_flatpak {
-            vec!["--host", "cosmic-osd"]
+        let (main_exec, args) = if is_flatpak {
+            (
+                "flatpak-spawn",
+                vec![
+                    "--host",
+                    "/bin/sh",
+                    "-l",
+                    "-c",
+                    match action {
+                        PowerAction::Logout => "cosmic-osd log-out",
+                        PowerAction::Reboot => "cosmic-osd restart",
+                        PowerAction::Shutdown => "cosmic-osd shutdown",
+                        _ => "",
+                    },
+                ],
+            )
         } else {
-            vec![]
-        };
-        match action {
-            PowerAction::Logout => {
-                args.push("log-out");
-            }
-            PowerAction::Reboot => {
-                args.push("restart");
-            }
-            PowerAction::Shutdown => {
-                args.push("shutdown");
-            }
-            _ => return action.perform(),
+            ("cosmic-osd", vec![power_action])
         };
 
+        // non sandboxed env
         if let Err(_) = process::Command::new(main_exec).args(args).spawn() {
             return action.perform();
         }
@@ -482,7 +494,14 @@ impl Applet {
     }
 
     fn launch_application(&mut self, app: Arc<ApplicationEntry>) -> Task<Message> {
-        let mut app_exec = app.exec.clone().unwrap();
+        let mut app_exec = app
+            .exec
+            .clone()
+            .unwrap()
+            .split_whitespace()
+            .filter(|arg| !arg.starts_with('%'))
+            .collect::<Vec<_>>()
+            .join(" ");
         let env_vars: Vec<(String, String)> = std::env::vars().collect();
         let app_id = Some(app.id.clone());
         let mut is_terminal = app.is_terminal;
@@ -506,7 +525,7 @@ impl Applet {
                 is_terminal = false;
             }
 
-            app_exec = format!("flatpak-spawn --host {}", app_exec);
+            app_exec = format!("flatpak-spawn --host /bin/sh -l -c '{}'", app_exec);
         }
 
         tokio::spawn(async move {

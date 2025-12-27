@@ -11,7 +11,7 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "cosmic-ext-classic-menu";
-  version = "0.0.10"; # Update this based on the latest release or tag
+  version = "0.0.11"; # Update this based on the latest release or tag
 
   src = fetchFromGitHub {
     owner = "championpeak87";
