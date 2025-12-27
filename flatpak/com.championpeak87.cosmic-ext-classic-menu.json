@@ -24,6 +24,7 @@
     "--talk-name=org.freedesktop.portal.*",
     "--talk-name=org.freedesktop.ScreenSaver",
     "--env=XDG_DATA_DIRS=/run/host/usr/share:/var/lib/flatpak/exports/share:/app/share:${HOME}/.local/share/flatpak/exports/share:${HOME}/.local/share",
+    "--filesystem=host:ro",
     "--filesystem=host-os:ro",
     "--filesystem=/var/lib/flatpak/exports/share/applications:ro",
     "--filesystem=/var/lib/flatpak/app:ro",
@@ -32,7 +33,8 @@
     "--filesystem=~/.local/share/flatpak/app:ro",
     "--filesystem=~/.local/share/flatpak/exports/share/icons:ro",
     "--filesystem=~/.local/share/applications:ro",
-    "--filesystem=~/.local/share/icons:ro"
+    "--filesystem=~/.local/share/icons:ro",
+    "--filesystem=/run/current-system/sw/bin:ro"
   ],
   "build-options": {
     "append-path": "/usr/lib/sdk/rust-stable/bin",
@@ -48,7 +50,8 @@
         "just build-release --verbose",
         "just prefix=/app install",
         "cp ./flatpak/launch-applet.sh /app",
-        "chmod +x /app/launch-applet.sh"
+        "chmod +x /app/launch-applet.sh",
+        "cp ./flatpak/com.championpeak87.cosmic-ext-classic-menu.desktop /app/share/applications/com.championpeak87.cosmic-ext-classic-menu.desktop"
       ],
       "sources": [
         {

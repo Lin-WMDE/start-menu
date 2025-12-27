@@ -1062,7 +1062,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-ext-classic-menu-settings"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
  "cosmic-ext-classic-menu-applet",
  "futures-util",

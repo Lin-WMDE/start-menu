@@ -10,3 +10,4 @@ vendor.tar
 .flatpak-builder
 build-dir
 flatpak-builder
+repo

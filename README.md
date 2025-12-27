@@ -67,8 +67,8 @@ Create a reusable bundle and install
 # create a local flatpak repo and build the app into it
 flatpak-builder --repo=repo build-dir flatpak/com.championpeak87.cosmic-ext-classic-menu.json --force-clean
 
-# create a single-file bundle (stable branch)
-flatpak build-bundle repo com.championpeak87.cosmic-ext-classic-menu.flatpak com.championpeak87.cosmic-ext-classic-menu stable
+# create a single-file bundle
+flatpak build-bundle repo com.championpeak87.cosmic-ext-classic-menu.flatpak com.championpeak87.cosmic-ext-classic-menu
 
 # install the bundle for the current user
 flatpak install --user com.championpeak87.cosmic-ext-classic-menu.flatpak

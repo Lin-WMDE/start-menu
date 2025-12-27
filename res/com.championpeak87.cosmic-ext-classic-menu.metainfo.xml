@@ -122,16 +122,16 @@
       <li xml:lang="sk">Podpora viacerých jazykov (lokalizácia)</li>
       <li xml:lang="sk">Moderný dizajn a kompatibilita s témami</li>
     </ul>
-    <p>Ideal for users who want fast app launching, menu customization, or an overview of frequently used programs. Perfect for COSMIC™ Desktop, but usable as a standalone launcher.</p>
-    <p xml:lang="cs">Applet je vhodný pro uživatele, kteří chtějí rychle spouštět aplikace, upravovat vzhled menu, nebo mít přehled o svých nejčastěji používaných programech. Je ideální pro desktopové prostředí COSMIC, ale lze jej použít i jako samostatný launcher.</p>
-    <p xml:lang="de">Ideal für Nutzer, die Anwendungen schnell starten, das Menü anpassen oder einen Überblick über häufig genutzte Programme haben möchten. Perfekt für COSMIC Desktop, aber auch als eigenständiger Launcher nutzbar.</p>
-    <p xml:lang="fr">Idéal pour les utilisateurs souhaitant lancer rapidement des applications, personnaliser le menu ou avoir un aperçu des programmes fréquemment utilisés. Parfait pour COSMIC Desktop, mais utilisable comme lanceur autonome.</p>
-    <p xml:lang="es">Ideal para usuarios que desean lanzar aplicaciones rápidamente, personalizar el menú o tener una visión general de los programas más utilizados. Perfecto para COSMIC Desktop, pero también utilizable como lanzador independiente.</p>
-    <p xml:lang="ru">Идеально подходит для пользователей, которым нужен быстрый запуск приложений, настройка меню или обзор часто используемых программ. Отлично подходит для COSMIC Desktop, но может использоваться как отдельный лаунчер.</p>
+    <p>Ideal for users who want fast app launching, menu customization, or an overview of frequently used programs. Perfect for COSMIC™ Desktop.</p>
+    <p xml:lang="cs">Applet je vhodný pro uživatele, kteří chtějí rychle spouštět aplikace, upravovat vzhled menu, nebo mít přehled o svých nejčastěji používaných programech. Je ideální pro desktopové prostředí COSMIC.</p>
+    <p xml:lang="de">Ideal für Nutzer, die Anwendungen schnell starten, das Menü anpassen oder einen Überblick über häufig genutzte Programme haben möchten. Perfekt für COSMIC Desktop.</p>
+    <p xml:lang="fr">Idéal pour les utilisateurs souhaitant lancer rapidement des applications, personnaliser le menu ou avoir un aperçu des programmes fréquemment utilisés. Parfait pour COSMIC Desktop.</p>
+    <p xml:lang="es">Ideal para usuarios que desean lanzar aplicaciones rápidamente, personalizar el menú o tener una visión general de los programas más utilizados. Perfecto para COSMIC Desktop.</p>
+    <p xml:lang="ru">Идеально подходит для пользователей, которым нужен быстрый запуск приложений, настройка меню или обзор часто используемых программ. Отлично подходит для COSMIC Desktop.</p>
     <p xml:lang="ja">アプリの素早い起動やメニューのカスタマイズ、よく使うプログラムの一覧が欲しいユーザーに最適です。COSMIC Desktopに最適ですが、単体ランチャーとしても利用可能です。</p>
-    <p xml:lang="hu">Ideális azoknak a felhasználóknak, akik gyors alkalmazásindítást, menü testreszabást vagy áttekintést szeretnének a gyakran használt programokról. Tökéletes a COSMIC™ Desktophoz, de önálló indítóként is használható.</p>
-    <p xml:lang="pl">Idealny dla użytkowników, którzy chcą szybkiego uruchamiania aplikacji, dostosowania menu lub przeglądu często używanych programów. Doskonały dla COSMIC™ Desktop, ale może być używany jako samodzielny launcher.</p>
-    <p xml:lang="sk">Ideálny pre používateľov, ktorí chcú rýchle spúšťanie aplikácií, prispôsobenie menu alebo prehľad často používaných programov. Perfektný pre COSMIC™ Desktop, ale použiteľný aj ako samostatný spúšťač.</p>
+    <p xml:lang="hu">Ideális azoknak a felhasználóknak, akik gyors alkalmazásindítást, menü testreszabást vagy áttekintést szeretnének a gyakran használt programokról. Tökéletes a COSMIC™ Desktophoz.</p>
+    <p xml:lang="pl">Idealny dla użytkowników, którzy chcą szybkiego uruchamiania aplikacji, dostosowania menu lub przeglądu często używanych programów. Doskonały dla COSMIC™ Desktop.</p>
+    <p xml:lang="sk">Ideálny pre používateľov, ktorí chcú rýchle spúšťanie aplikácií, prispôsobenie menu alebo prehľad často používaných programov. Perfektný pre COSMIC™ Desktop.</p>
   </description>
   <launchable type="desktop-id">
     com.championpeak87.cosmic-ext-classic-menu.desktop
@@ -167,6 +167,15 @@
     <category>Desktop</category>
   </categories>
   <releases>
+    <release version="0.0.11" date="2025-12-27">
+      <description>
+        <h1>What's changed</h1>
+        <ul>
+          <li>Fixed issue with flatpak applications not showing up in the list</li>
+          <li>Added support for NixOS</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.0.10" date="2025-11-24">
       <description>
         <h1>What's changed</h1>
