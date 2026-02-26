@@ -2,17 +2,41 @@ use std::path::PathBuf;
 
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::{
-    widget::{column, row},
     Alignment, Length,
+    widget::{column, row},
 };
 use cosmic::iced::{ContentFit, Font, Limits};
-use cosmic::widget::{container, ListColumn};
-use cosmic::widget::{scrollable, text};
-use cosmic::{theme, Element};
+use cosmic::widget::{container, menu};
+use cosmic::widget::text;
+use cosmic::{Element, theme};
 
-use crate::applet::{Applet, Message, PowerAction};
+use crate::applet::{Applet, Message};
 use crate::config::{HorizontalPosition, VerticalPosition};
 use crate::fl;
+use crate::model::power_action::PowerAction;
+use crate::widgets::VirtualizedAppList;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ContextMenuAction {
+    LaunchApplication(usize),
+    LaunchApplicationWithAction(usize, usize),
+    PinToPanel(usize, bool),
+}
+
+impl menu::Action for ContextMenuAction {
+    type Message = Message;
+    fn message(&self) -> Self::Message {
+        match self {
+            ContextMenuAction::LaunchApplication(index) => Message::LaunchApplicationAt(*index),
+            ContextMenuAction::LaunchApplicationWithAction(app_index, action_index) => {
+                Message::LaunchApplicationWithActionAt(*app_index, *action_index)
+            }
+            ContextMenuAction::PinToPanel(index, favorites) => {
+                Message::PinToAppTrayIndex(*index, *favorites)
+            }
+        }
+    }
+}
 
 pub struct AppletMenu;
 
@@ -40,10 +64,10 @@ impl AppletMenu {
             space_xxs, space_s, ..
         } = theme::active().cosmic().spacing;
 
-        let current_user = AppletMenu::create_logged_user_widget(&applet);
-        let search_field = AppletMenu::create_search_field(&applet);
-        let app_list = AppletMenu::create_app_list(&applet);
-        let categories_pane = AppletMenu::create_categories_pane(&applet);
+        let current_user = AppletMenu::create_logged_user_widget(applet);
+        let search_field = AppletMenu::create_search_field(applet);
+        let app_list = AppletMenu::create_app_list(applet);
+        let categories_pane = AppletMenu::create_categories_pane(applet);
         let vertical_spacer =
             cosmic::applet::padded_control(cosmic::widget::divider::vertical::default())
                 .align_x(Alignment::Center)
@@ -121,60 +145,15 @@ impl AppletMenu {
 
         cosmic::widget::search_input(fl!("search-placeholder"), &applet.search_field)
             .on_input(Message::SearchFieldInput)
-            .always_active()
+            .on_clear(Message::SearchCleared)
             .width(Length::Fill)
+            .always_active()
             .padding([space_xxs, space_s])
             .into()
     }
 
     fn create_app_list(applet: &Applet) -> Element<'_, Message> {
-        let Spacing {
-            space_l, space_xl, ..
-        } = theme::active().cosmic().spacing;
-
-        let app_list: ListColumn<Message> = applet.available_applications.iter().fold(
-            cosmic::widget::list_column().padding([0., 0.]),
-            |list, app| {
-                let button = cosmic::widget::button::custom(
-                    row![
-                        match app.icon.clone().unwrap_or_default() {
-                            crate::model::application_entry::IconHandle::SvgHandle(handle) =>
-                                container(
-                                    cosmic::widget::svg(handle)
-                                        .width(Length::Fixed(space_l.into()))
-                                        .height(Length::Fixed(space_l.into()))
-                                        .content_fit(ContentFit::Contain)
-                                ),
-                            crate::model::application_entry::IconHandle::RasterHandle(handle) =>
-                                container(
-                                    cosmic::widget::image(handle)
-                                        .width(Length::Fixed(space_l.into()))
-                                        .height(Length::Fixed(space_l.into()))
-                                        .content_fit(ContentFit::Contain)
-                                ),
-                        },
-                        cosmic::widget::Space::new(5, Length::Fill),
-                        column![
-                            text(&app.name),
-                            text(app.comment.as_deref().unwrap_or_default()).size(8.0),
-                        ]
-                        .padding([0, 0]),
-                    ]
-                    .align_y(Alignment::Center),
-                )
-                .on_press(Message::ApplicationSelected(app.clone()))
-                .class(cosmic::theme::Button::MenuItem)
-                .width(Length::Fill)
-                .height(space_xl);
-
-                list.add(button)
-            },
-        );
-
-        scrollable(app_list)
-            .height(Length::Fill)
-            .width(Length::FillPortion(5))
-            .into()
+        VirtualizedAppList::view(applet)
     }
 
     fn create_categories_pane(applet: &Applet) -> Element<'_, Message> {
