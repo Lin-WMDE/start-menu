@@ -7,7 +7,9 @@ use cosmic::cctk::sctk::reexports::protocols::xdg::shell::client::xdg_positioner
     Anchor, Gravity,
 };
 use cosmic::cosmic_config::{Config, CosmicConfigEntry};
-use cosmic::iced::event::listen_raw;
+use cosmic::desktop::fde::Key;
+use cosmic::iced::event::wayland::LayerEvent;
+use cosmic::iced::event::{PlatformSpecific, listen_raw, listen_with, wayland};
 use cosmic::iced::keyboard::key::Named;
 use cosmic::iced::{
     Alignment,
@@ -16,7 +18,10 @@ use cosmic::iced::{
     window::Id,
 };
 use cosmic::iced::{Subscription, keyboard};
+use cosmic::iced_runtime::platform_specific::wayland::layer_surface::SctkLayerSurfaceSettings;
 use cosmic::iced_widget::scrollable::{RelativeOffset, Viewport};
+use cosmic::iced_winit::commands::layer_surface::{destroy_layer_surface, get_layer_surface};
+use cosmic::iced_winit::commands::subsurface::KeyboardInteractivity;
 use cosmic::surface::Action;
 use cosmic::{Application, Element};
 use cosmic_app_list_config::AppListConfig;
@@ -99,6 +104,8 @@ pub enum Message {
     LaunchApplicationWithActionAt(usize, usize),
     PinToAppTrayIndex(usize, bool),
     ScrollUpdated(Viewport),
+    Layer(LayerEvent, Id),
+    Hide,
 }
 
 /// Implement the `Application` trait for your application.
@@ -429,6 +436,11 @@ impl Application for Applet {
                 self.scroll_offset = viewport.absolute_offset().y;
                 Task::none()
             }
+            Message::Layer(layer_event, id) => match layer_event {
+                LayerEvent::Unfocused => destroy_layer_surface(id),
+                _ => Task::none(),
+            },
+            Message::Hide => destroy_layer_surface(self.popup.unwrap()),
         }
     }
 
@@ -444,6 +456,17 @@ impl Application for Applet {
     fn subscription(&self) -> Subscription<Self::Message> {
         Subscription::batch(vec![
             desktop_files(self.core.main_window_id()).map(Message::FileEvent),
+            listen_with(|e, status, layer_id| match e {
+                cosmic::iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Layer(e, _, id),
+                )) => Some(Message::Layer(e, layer_id)),
+                cosmic::iced::Event::Keyboard(cosmic::iced::keyboard::Event::KeyReleased {
+                    key: keyboard::Key::Named(Named::Escape),
+                    modifiers: _mods,
+                    ..
+                }) => Some(Message::Hide),
+                _ => None,
+            }),
             listen_raw(|event, _, _| {
                 return match event {
                     cosmic::iced::Event::Keyboard(keyboard::Event::KeyPressed {
@@ -509,28 +532,36 @@ impl Applet {
         }
 
         if let Some(p) = self.popup.take() {
-            tasks.push(destroy_popup(p));
+            tasks.push(destroy_layer_surface(p));
             Task::batch(tasks)
         } else {
             let new_id = Id::unique();
             self.popup.replace(new_id);
-            let mut popup_settings = self.core.applet.get_popup_settings(
-                self.core.main_window_id().unwrap(),
-                new_id,
-                None,
-                None,
-                None,
-            );
-            let (anchor, gravity) = match self.core.applet.anchor {
-                PanelAnchor::Left => (Anchor::TopRight, Gravity::BottomRight),
-                PanelAnchor::Right => (Anchor::TopLeft, Gravity::BottomLeft),
-                PanelAnchor::Top => (Anchor::BottomLeft, Gravity::BottomRight),
-                PanelAnchor::Bottom => (Anchor::TopLeft, Gravity::TopRight),
-            };
-            popup_settings.positioner.anchor = anchor;
-            popup_settings.positioner.gravity = gravity;
 
-            tasks.push(get_popup(popup_settings));
+            tasks.push(get_layer_surface(SctkLayerSurfaceSettings {
+                id: self.popup.unwrap(),
+                keyboard_interactivity: KeyboardInteractivity::Exclusive,
+                anchor: cosmic::cctk::sctk::shell::wlr_layer::Anchor::all(),
+                namespace: "app-library".into(),
+                ..Default::default()
+            }));
+            // let mut popup_settings = self.core.applet.get_popup_settings(
+            //     self.core.main_window_id().unwrap(),
+            //     new_id,
+            //     None,
+            //     None,
+            //     None,
+            // );
+            // let (anchor, gravity) = match self.core.applet.anchor {
+            //     PanelAnchor::Left => (Anchor::TopRight, Gravity::BottomRight),
+            //     PanelAnchor::Right => (Anchor::TopLeft, Gravity::BottomLeft),
+            //     PanelAnchor::Top => (Anchor::BottomLeft, Gravity::BottomRight),
+            //     PanelAnchor::Bottom => (Anchor::TopLeft, Gravity::TopRight),
+            // };
+            // popup_settings.positioner.anchor = anchor;
+            // popup_settings.positioner.gravity = gravity;
+
+            // tasks.push(get_popup(popup_settings));
             Task::batch(tasks)
         }
     }
@@ -609,7 +640,7 @@ impl Applet {
         }
 
         if let Some(p) = self.popup.take() {
-            return destroy_popup(p);
+            return destroy_layer_surface(p);
         }
 
         Task::none()
@@ -672,7 +703,7 @@ impl Applet {
         self.update_recent_applications(app);
 
         if let Some(p) = self.popup.take() {
-            return destroy_popup(p);
+            return destroy_layer_surface(p);
         }
         Task::none()
     }
@@ -724,7 +755,7 @@ impl Applet {
     fn launch_tool(&mut self, tool: SystemTool) -> Task<Message> {
         tool.perform();
         if let Some(p) = self.popup.take() {
-            return destroy_popup(p);
+            return destroy_layer_surface(p);
         }
         Task::none()
     }
