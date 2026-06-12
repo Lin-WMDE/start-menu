@@ -9,6 +9,8 @@ use cosmic::cctk::sctk::reexports::protocols::xdg::shell::client::xdg_positioner
 use cosmic::cosmic_config::{Config, CosmicConfigEntry};
 use cosmic::iced::event::listen_raw;
 use cosmic::iced::keyboard::key::Named;
+use cosmic::iced::widget::operation::AbsoluteOffset;
+use cosmic::iced::widget::scrollable::{RelativeOffset, Viewport};
 use cosmic::iced::{
     Alignment,
     platform_specific::shell::commands::popup::{destroy_popup, get_popup},
@@ -16,7 +18,6 @@ use cosmic::iced::{
     window::Id,
 };
 use cosmic::iced::{Subscription, keyboard};
-use cosmic::iced_widget::scrollable::{RelativeOffset, Viewport};
 use cosmic::surface::Action;
 use cosmic::{Application, Element};
 use cosmic_app_list_config::AppListConfig;
@@ -68,6 +69,8 @@ pub struct Applet {
     pub context_menus: std::collections::HashMap<String, Vec<cosmic::widget::menu::Tree<Message>>>,
     /// Scroll offset for virtualization (pixels from top)
     pub scroll_offset: f32,
+    /// Viewport height for virtualization and selection scroll behavior.
+    pub scroll_viewport_height: f32,
 }
 
 /// This is the enum that contains all the possible variants that your application will need to transmit messages.
@@ -146,6 +149,7 @@ impl Application for Applet {
             popup: None,
             context_menus: std::collections::HashMap::new(),
             scroll_offset: 0.0,
+            scroll_viewport_height: 0.0,
         };
 
         // fetch current user asynchronously
@@ -427,13 +431,10 @@ impl Application for Applet {
             }
             Message::ScrollUpdated(viewport) => {
                 self.scroll_offset = viewport.absolute_offset().y;
+                self.scroll_viewport_height = viewport.bounds().height;
                 Task::none()
             }
         }
-    }
-
-    fn style(&self) -> Option<cosmic::iced_runtime::Appearance> {
-        Some(cosmic::applet::style())
     }
 
     /// Register subscriptions for this application.
@@ -443,7 +444,7 @@ impl Application for Applet {
     /// beginning of the application, and persist through its lifetime.
     fn subscription(&self) -> Subscription<Self::Message> {
         Subscription::batch(vec![
-            desktop_files(self.core.main_window_id()).map(Message::FileEvent),
+            desktop_files().map(Message::FileEvent),
             listen_raw(|event, _, _| {
                 return match event {
                     cosmic::iced::Event::Keyboard(keyboard::Event::KeyPressed {
@@ -564,11 +565,9 @@ impl Applet {
 
         Task::batch([
             // reset scroll position
-            cosmic::iced_runtime::task::widget(
-                cosmic::iced_core::widget::operation::scrollable::snap_to(
-                    self.scrollable_id.clone(),
-                    RelativeOffset { x: 0., y: 0. },
-                ),
+            cosmic::iced::widget::operation::snap_to(
+                self.scrollable_id.clone(),
+                RelativeOffset { x: 0., y: 0. },
             ),
             Task::perform(
                 tokio::task::spawn_blocking(move || crate::logic::apps::load_filtered_apps(input)),
@@ -706,11 +705,9 @@ impl Applet {
 
         Task::batch([
             // reset scroll position
-            cosmic::iced_runtime::task::widget(
-                cosmic::iced_core::widget::operation::scrollable::snap_to(
-                    self.scrollable_id.clone(),
-                    RelativeOffset { x: 0., y: 0. },
-                ),
+            cosmic::iced::widget::operation::snap_to(
+                self.scrollable_id.clone(),
+                RelativeOffset { x: 0., y: 0. },
             ),
             Task::perform(
                 tokio::task::spawn_blocking(move || {
@@ -776,31 +773,43 @@ impl Applet {
         if self.selected_item_index.is_none() {
             return Task::none();
         }
+
         if let Some(index) = self.selected_item_index {
             if index > 0 {
                 self.selected_item_index = Some(index - 1);
             }
         }
 
-        return Task::batch([cosmic::iced_runtime::task::widget(
-            cosmic::iced_core::widget::operation::scrollable::snap_to(
+        if let Some(index) = self.selected_item_index {
+            let spacing = cosmic::theme::active().cosmic().spacing;
+            let item_height = spacing.space_xl as f32;
+            let viewport_height = self.scroll_viewport_height.max(item_height);
+            let visible_top = self.scroll_offset;
+            let visible_bottom = visible_top + viewport_height;
+
+            let selected_top = index as f32 * item_height;
+            let selected_bottom = selected_top + item_height;
+
+            if selected_top >= visible_top && selected_bottom <= visible_bottom {
+                return Task::none();
+            }
+
+            let target_offset = if selected_top < visible_top {
+                selected_top
+            } else {
+                selected_bottom - viewport_height
+            };
+
+            return Task::batch([cosmic::iced::widget::operation::scroll_to(
                 self.scrollable_id.clone(),
-                RelativeOffset {
-                    x: 0.,
-                    y: (self.selected_item_index.unwrap() as f32
-                        / (self.available_applications.len() as f32 - 1.).max(1.))
-                    .max(0.0),
-                },
-            ),
-        )]);
+                AbsoluteOffset { x: 0., y: target_offset },
+            )]);
+        }
+
+        Task::none()
     }
 
     fn select_next_app(&mut self) -> cosmic::Task<cosmic::Action<Message>> {
-        // Disable keyboard selection during active search to avoid re-render overhead
-        if !self.search_field.is_empty() {
-            return Task::none();
-        }
-
         if self.selected_item_index.is_none() && !self.available_applications.is_empty() {
             self.selected_item_index = Some(0);
         } else if let Some(index) = self.selected_item_index {
@@ -809,16 +818,34 @@ impl Applet {
             }
         }
 
-        return Task::batch([cosmic::iced_runtime::task::widget(
-            cosmic::iced_core::widget::operation::scrollable::snap_to(
+        if let Some(index) = self.selected_item_index {
+            let spacing = cosmic::theme::active().cosmic().spacing;
+            let item_height = spacing.space_xl as f32;
+            let viewport_height = self.scroll_viewport_height.max(item_height);
+            let visible_top = self.scroll_offset;
+            let visible_bottom = visible_top + viewport_height;
+
+            let selected_top = index as f32 * item_height;
+            let selected_bottom = selected_top + item_height;
+
+            if selected_top >= visible_top && selected_bottom <= visible_bottom {
+                return Task::none();
+            }
+
+            let target_offset = if selected_top < visible_top {
+                selected_top
+            } else {
+                selected_bottom - viewport_height
+            };
+
+            dbg!(target_offset);
+
+            return Task::batch([cosmic::iced::widget::operation::scroll_to(
                 self.scrollable_id.clone(),
-                RelativeOffset {
-                    x: 0.,
-                    y: (self.selected_item_index.unwrap() as f32
-                        / (self.available_applications.len() as f32 - 1.).max(1.))
-                    .max(0.0),
-                },
-            ),
-        )]);
+                AbsoluteOffset { x: 0., y: target_offset + 16.0 },
+            )]);
+        }
+
+        Task::none()
     }
 }

@@ -6,16 +6,16 @@ use std::{collections::HashMap, string::String, sync::Arc};
 
 use cached::{proc_macro::cached, UnboundCache};
 use cosmic_app_list_config::AppListConfig;
+use futures::channel::mpsc::Sender;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use unicode_normalization::{char::is_combining_mark, UnicodeNormalization};
 
 use cosmic::{
     iced::{stream, Subscription},
-    iced_futures::futures::{self, SinkExt},
+    iced::futures::{self, SinkExt},
 };
 use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::fmt::Debug;
-use std::hash::Hash;
 use tokio::sync::mpsc;
 
 #[cached(
@@ -167,12 +167,9 @@ pub enum Event {
     Changed,
 }
 
-pub fn desktop_files<I: 'static + Hash + Copy + Send + Sync + Debug>(
-    id: I,
-) -> cosmic::iced::Subscription<Event> {
-    Subscription::run_with_id(
-        id,
-        stream::channel(50, move |mut output| async move {
+pub fn desktop_files() -> cosmic::iced::Subscription<Event> {
+    Subscription::run(|| 
+        stream::channel(50, move |mut output: Sender<Event>| async move {
             let handle = tokio::runtime::Handle::current();
             let (tx, mut rx) = mpsc::channel(4);
             let mut last_update = std::time::Instant::now();

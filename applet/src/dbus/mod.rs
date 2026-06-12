@@ -1,5 +1,5 @@
 use cosmic::iced::{Subscription, stream};
-use futures::SinkExt;
+use futures::{SinkExt, channel::mpsc::Sender};
 use tokio::sync::mpsc;
 
 use crate::{applet::Message, dbus::interface::AppletSignalsService};
@@ -8,7 +8,7 @@ pub mod interface;
 
 pub fn dbus_service_subscription() -> Subscription<Message> {
     Subscription::run(|| {
-        stream::channel(100, |mut output| async move {
+        stream::channel(100, |mut output: Sender<Message>| async move {
             let (tx, mut rx) = mpsc::unbounded_channel();
 
             // Register the D-Bus service with the channel sender

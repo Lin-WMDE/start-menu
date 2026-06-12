@@ -140,7 +140,7 @@ impl cosmic::Application for AppModel {
                 Some(self.config.app_menu_position),
                 Message::AppPositionChanged
             ),
-            cosmic::widget::Space::new(5, Length::Shrink),
+            cosmic::widget::Space::new().width(5).height(Length::Shrink),
             cosmic::widget::Radio::new(
                 cosmic::widget::text::heading(fl!("right")),
                 HorizontalPosition::Right,
@@ -149,14 +149,14 @@ impl cosmic::Application for AppModel {
             )
         ];
         let search_field_position = cosmic::iced::widget::row![
-            cosmic::widget::Space::new(Length::Fill, 5),
+            cosmic::widget::Space::new().width(Length::Fill).height(5),
             cosmic::widget::Radio::new(
                 cosmic::widget::text::heading(fl!("top")),
                 VerticalPosition::Top,
                 Some(self.config.search_field_position),
                 Message::SearchFieldPositionChanged
             ),
-            cosmic::widget::Space::new(5, Length::Shrink),
+            cosmic::widget::Space::new().width(5).height(Length::Shrink),
             cosmic::widget::Radio::new(
                 cosmic::widget::text::heading(fl!("bottom")),
                 VerticalPosition::Bottom,
@@ -165,7 +165,7 @@ impl cosmic::Application for AppModel {
             )
         ];
         let applet_button_style = cosmic::iced::widget::row![
-            cosmic::widget::Space::new(Length::Fill, 5),
+            cosmic::widget::Space::new().width(Length::Fill).height(5),
             cosmic::widget::dropdown(
                 vec![
                     fl!("icon-only"),
@@ -178,7 +178,7 @@ impl cosmic::Application for AppModel {
             )
         ];
         let user_widget = cosmic::iced::widget::row![
-            cosmic::widget::Space::new(Length::Fill, 5),
+            cosmic::widget::Space::new().width(Length::Fill).height(5),
             cosmic::widget::dropdown(
                 vec![
                     fl!("username-prefered"),
@@ -190,12 +190,12 @@ impl cosmic::Application for AppModel {
             )
         ];
         let button_label = cosmic::iced::widget::row![
-            cosmic::widget::Space::new(Length::Fill, 5),
+            cosmic::widget::Space::new().width(Length::Fill).height(5),
             cosmic::widget::text_input(fl!("button-label-placeholder"), &self.config.button_label)
                 .on_input(Message::ButtonLabelChanged)
         ];
         let button_icon = cosmic::iced::widget::row![
-            cosmic::widget::Space::new(Length::Fill, 5),
+            cosmic::widget::Space::new().width(Length::Fill).height(5),
             cosmic::widget::button::text(fl!("button-icon-placeholder"))
                 .on_press(Message::OpenIconPicker) // 4. Open picker on click
         ];
@@ -458,7 +458,7 @@ impl AppModel {
         let theme = cosmic::theme::active();
         let theme = theme.cosmic();
 
-        let mut grid = cosmic::iced_widget::Column::new().spacing(theme.space_xs());
+        let mut grid = cosmic::iced::widget::Column::new().spacing(theme.space_xs());
 
         // handle custom icon selection
         let currently_selected_icon: PathBuf = PathBuf::from(&self.config.button_icon);
@@ -470,7 +470,7 @@ impl AppModel {
 
         // Add default set of icons
         for chunk in icons.chunks(icons_per_row) {
-            let mut row = cosmic::iced_widget::Row::new().spacing(theme.space_xs());
+            let mut row = cosmic::iced::widget::Row::new().spacing(theme.space_xs());
             for icon_path in chunk {
                 let icon_pathbuf: PathBuf = icon_path.into();
                 let icon_name = icon_pathbuf
@@ -491,7 +491,7 @@ impl AppModel {
         let custom_icon_button = cosmic::widget::button::standard(fl!("select-custom-icon"))
             .on_press(Message::CustomIconSelected);
 
-        cosmic::iced_widget::column![custom_icon_button, grid]
+        cosmic::iced::widget::column![custom_icon_button, grid]
             .width(Length::Fill)
             .align_x(Alignment::Center)
             .spacing(theme.space_xs())
@@ -511,7 +511,7 @@ impl AppModel {
         let theme = theme.cosmic();
         let background = Background::Color(theme.palette.neutral_4.into());
 
-        cosmic::widget::column()
+        cosmic::iced::widget::column::Column::new()
             .push(
                 cosmic::widget::button::custom_image_button(
                     cosmic::widget::icon::from_path(icon_pathbuf.clone())

@@ -98,7 +98,7 @@ impl AppletButton {
             cosmic::widget::icon(icon_handle)
                 .width(Length::Fixed(suggested_size.0 as f32))
                 .height(Length::Fixed(suggested_size.1 as f32)),
-            cosmic::widget::Space::new(5, Length::Shrink),
+            cosmic::widget::Space::new().width(5).height(Length::Shrink),
             cosmic::widget::text(applet.config.button_label.as_str())
         ]
         .align_y(Alignment::Center);
