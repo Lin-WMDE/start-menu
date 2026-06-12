@@ -166,7 +166,16 @@
     <category>Desktop</category>
   </categories>
   <releases>
-  <release version="0.0.13" date="2026-03-09">
+    <release version="0.0.14" date="2026-06-12">
+      <description>
+        <h1>What's changed</h1>
+        <ul>
+          <li>Patched issue with applet crashing</li>
+          <li>Fixed scrolling of the app list when using arrow keys</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.0.13" date="2026-03-09">
       <description>
         <h1>What's changed</h1>
         <ul>
