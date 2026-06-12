@@ -6,8 +6,8 @@ use cosmic::iced::{
     widget::{column, row},
 };
 use cosmic::iced::{ContentFit, Font, Limits};
-use cosmic::widget::{container, menu};
 use cosmic::widget::text;
+use cosmic::widget::{container, menu};
 use cosmic::{Element, theme};
 
 use crate::applet::{Applet, Message};
@@ -95,7 +95,11 @@ impl AppletMenu {
         applet
             .core
             .applet
-            .popup_container(menu_layout.width(Length::Fixed(600.)).height(Length::Fill))
+            .popup_container(
+                menu_layout
+                    .width(Length::Fixed(600.))
+                    .height(Length::Fixed(AppletMenu::POPUP_MAX_HEIGHT)),
+            )
             .limits(
                 Limits::NONE
                     .max_height(AppletMenu::POPUP_MAX_HEIGHT)
@@ -197,7 +201,12 @@ impl AppletMenu {
         }
 
         // add power menu to the bottom of the categories pane
-        categories_pane.push(cosmic::widget::Space::new().width(Length::Fill).height(Length::Fill).into());
+        categories_pane.push(
+            cosmic::widget::Space::new()
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .into(),
+        );
         categories_pane.push(AppletMenu::create_power_menu(&applet));
 
         cosmic::widget::column::with_children(categories_pane)
@@ -258,7 +267,9 @@ impl AppletMenu {
                             .into()
                     }
                 }
-                crate::config::UserWidgetStyle::None => cosmic::widget::Space::new().width(0).height(0).into(),
+                crate::config::UserWidgetStyle::None => {
+                    cosmic::widget::Space::new().width(0).height(0).into()
+                }
             };
 
             row![

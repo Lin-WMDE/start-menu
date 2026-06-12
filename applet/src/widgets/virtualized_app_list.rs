@@ -32,7 +32,6 @@ impl VirtualizedAppList {
     /// A scrollable element containing only the visible app items
     pub fn view(applet: &Applet) -> Element<'_, Message> {
         let Spacing {
-            // space_xxs,
             space_s,
             space_xl,
             ..
@@ -85,12 +84,11 @@ impl VirtualizedAppList {
         // Build list column from items
         let app_list: ListColumn<Message> = items.into_iter().fold(
             cosmic::widget::list_column()
-                // .padding([space_xxs as f32, 0.])
                 .list_item_padding([0., space_s as f32]),
             |list, item| list.add(item),
         );
 
-        scrollable(app_list)
+        scrollable(container(app_list))
             .height(Length::Fill)
             .width(Length::FillPortion(5))
             .id(applet.scrollable_id.clone())
