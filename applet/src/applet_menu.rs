@@ -41,9 +41,9 @@ impl menu::Action for ContextMenuAction {
 pub struct AppletMenu;
 
 impl AppletMenu {
-    pub const POPUP_MAX_WIDTH: f32 = 700.0;
-    pub const POPUP_MIN_WIDTH: f32 = 500.0;
-    pub const POPUP_MAX_HEIGHT: f32 = 700.0;
+    pub const POPUP_MAX_WIDTH: f32 = 720.0;
+    pub const POPUP_MIN_WIDTH: f32 = 440.0;
+    pub const POPUP_MAX_HEIGHT: f32 = 680.0;
     pub const POPUP_MIN_HEIGHT: f32 = 300.0;
 
     const SYSTEM_LOCKSCREEN_SYMBOLIC_ICON: &[u8] =
@@ -73,32 +73,80 @@ impl AppletMenu {
                 .align_x(Alignment::Center)
                 .align_y(Alignment::Center)
                 .width(Length::Shrink)
-                .padding(5);
+                .padding(8);
+
+        let settings_button: Element<'_, Message> = applet
+            .available_applications
+            .iter()
+            .find(|a| a.id == "com.system76.CosmicSettings")
+            .map(|app| -> Element<'_, Message> {
+                cosmic::widget::button::custom(
+                    crate::widgets::virtualized_app_list::VirtualizedAppList::create_icon_widget(
+                        app, 24,
+                    ),
+                )
+                .on_press(Message::ApplicationSelected(app.clone()))
+                .class(cosmic::theme::Button::AppletMenu)
+                .into()
+            })
+            .unwrap_or_else(|| {
+                cosmic::widget::Space::new()
+                    .width(Length::Fixed(0.0))
+                    .height(Length::Fixed(0.0))
+                    .into()
+            });
+
+        let header = container(
+            row![
+                container(current_user).width(Length::FillPortion(3)),
+                cosmic::widget::Space::new().width(Length::Fixed(17.0)),
+                row![search_field, settings_button]
+                    .spacing(space_xxs as f32)
+                    .align_y(Alignment::Center)
+                    .width(Length::FillPortion(5)),
+            ]
+            .align_y(Alignment::Center),
+        )
+        .class(cosmic::theme::Container::Primary)
+        .width(Length::Fill)
+        .padding([2, space_xxs]);
 
         let dual_pane = match applet.config.app_menu_position {
             HorizontalPosition::Left => {
-                row![app_list, vertical_spacer, categories_pane].padding([space_xxs, 0])
+                row![app_list, vertical_spacer, categories_pane]
             }
             HorizontalPosition::Right => {
-                row![categories_pane, vertical_spacer, app_list].padding([space_xxs, 0])
+                row![categories_pane, vertical_spacer, app_list]
             }
-        };
-        let menu_layout = match applet.config.search_field_position {
-            VerticalPosition::Top => {
-                column![current_user, search_field, dual_pane].padding([space_xxs, space_s])
-            }
-            VerticalPosition::Bottom => {
-                column![current_user, dual_pane, search_field].padding([space_xxs, space_s])
-            }
-        };
+        }
+        .padding([space_xxs, space_xxs])
+        .height(Length::Fixed(432.0));
+
+        let top_divider =
+            cosmic::widget::divider::horizontal::default();
+        let bottom_divider =
+            cosmic::widget::divider::horizontal::default();
+
+        let footer = container(
+            row![
+                cosmic::widget::Space::new().width(Length::Fill),
+                AppletMenu::create_power_menu(applet),
+            ]
+            .align_y(Alignment::Center),
+        )
+        .class(cosmic::theme::Container::Primary)
+        .width(Length::Fill);
+
+        let menu_layout =
+            column![header, top_divider, dual_pane, bottom_divider, footer];
 
         applet
             .core
             .applet
             .popup_container(
                 menu_layout
-                    .width(Length::Fixed(600.))
-                    .height(Length::Fixed(AppletMenu::POPUP_MAX_HEIGHT)),
+                    .width(Length::Fixed(640.))
+                    .height(Length::Shrink),
             )
             .limits(
                 Limits::NONE
@@ -136,8 +184,8 @@ impl AppletMenu {
             ]
             .align_y(Alignment::Center),
         )
-        .width(Length::Fill)
-        .padding([20, 0])
+        .width(Length::Shrink)
+        .padding([10, 8])
         .align_x(Alignment::Center)
         .into()
     }
@@ -151,8 +199,7 @@ impl AppletMenu {
             .on_input(Message::SearchFieldInput)
             .on_clear(Message::SearchCleared)
             .width(Length::Fill)
-            .always_active()
-            .padding([space_xxs, space_s])
+            .padding([0, space_s])
             .into()
     }
 
@@ -161,9 +208,7 @@ impl AppletMenu {
     }
 
     fn create_categories_pane(applet: &Applet) -> Element<'_, Message> {
-        let Spacing { space_m, .. } = cosmic::theme::active().cosmic().spacing;
-
-        let mut categories_pane: Vec<Element<Message>> = applet
+        let mut buttons: Vec<Element<Message>> = applet
             .available_categories
             .iter()
             .map(|category| {
@@ -174,7 +219,7 @@ impl AppletMenu {
                                 .symbolic(true)
                                 .icon()
                         )
-                        .padding([0, space_m]),
+                        .padding([0, 6]),
                         text(category.get_display_name()),
                     ]
                     .align_y(Alignment::Center),
@@ -190,26 +235,21 @@ impl AppletMenu {
             })
             .collect();
 
-        let horizontal_divider =
+        let group2 = if buttons.len() > 2 {
+            buttons.split_off(2)
+        } else {
+            Vec::new()
+        };
+        let group1 = buttons;
+
+        let top = cosmic::widget::column::with_children(group1).spacing(8.0);
+        let bottom = cosmic::widget::column::with_children(group2).spacing(8.0);
+        let divider =
             cosmic::applet::padded_control(cosmic::widget::divider::horizontal::default())
-                .align_x(Alignment::Center)
-                .align_y(Alignment::Center)
-                .padding(5)
-                .into();
-        if !categories_pane.is_empty() {
-            categories_pane.insert(2, horizontal_divider);
-        }
+                .padding(0);
 
-        // add power menu to the bottom of the categories pane
-        categories_pane.push(
-            cosmic::widget::Space::new()
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .into(),
-        );
-        categories_pane.push(AppletMenu::create_power_menu(&applet));
-
-        cosmic::widget::column::with_children(categories_pane)
+        cosmic::widget::column::with_children(vec![top.into(), divider.into(), bottom.into()])
+            .spacing(3.0)
             .height(Length::Fill)
             .width(Length::FillPortion(3))
             .into()
@@ -224,8 +264,8 @@ impl AppletMenu {
             let profile_picture_widget: Element<Message> =
                 if PathBuf::from(&user.profile_picture).exists() {
                     cosmic::widget::image(&user.profile_picture)
-                        .width(Length::Fixed(40.))
-                        .height(Length::Fixed(40.))
+                        .width(Length::Fixed(28.))
+                        .height(Length::Fixed(28.))
                         .content_fit(ContentFit::ScaleDown)
                         .border_radius([5.; 4])
                         .into()
@@ -233,7 +273,7 @@ impl AppletMenu {
                     cosmic::widget::icon::from_svg_bytes(AppletMenu::USER_IDLE_SYMBOLIC)
                         .symbolic(true)
                         .icon()
-                        .size(40)
+                        .size(28)
                         .into()
                 };
 
