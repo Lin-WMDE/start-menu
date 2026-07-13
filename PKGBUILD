@@ -4,7 +4,7 @@
 # Builds our fork Lin-WMDE/wmde-start-menu (branch `wmde`).
 pkgname=wmde-start-menu
 pkgver=0.0.14
-pkgrel=1
+pkgrel=2
 pkgdesc="WMDE Start Menu - a classic Windows-style launcher applet for the COSMIC desktop (fork of cosmic-ext-classic-menu)"
 arch=('x86_64')
 url="https://wmde.fun"
