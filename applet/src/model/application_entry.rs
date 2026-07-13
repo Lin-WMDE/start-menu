@@ -92,14 +92,20 @@ impl From<cosmic::desktop::DesktopAction> for DesktopAction {
 
 impl Default for IconHandle {
     fn default() -> Self {
-        IconHandle::SvgHandle(
-            cosmic::widget::icon::from_name("application-x-executable")
-                .size(32)
-                .handle()
-                .icon()
-                .into_svg_handle()
-                .unwrap(),
-        )
+        let named = cosmic::widget::icon::from_name("application-x-executable").size(32);
+
+        // The icon may resolve to either an SVG or a raster (PNG) file depending on
+        // the active icon theme. Never force it into an SVG handle: doing so panics
+        // whenever the theme only provides a raster variant at this size.
+        if let Some(handle) = named.clone().icon().into_svg_handle() {
+            IconHandle::SvgHandle(handle)
+        } else if let Some(path) = named.path() {
+            IconHandle::RasterHandle(Handle::from_path(path))
+        } else {
+            // Ultimate fallback: a 1x1 transparent pixel. Always valid, never panics,
+            // even if no icon at all could be resolved.
+            IconHandle::RasterHandle(Handle::from_rgba(1, 1, vec![0u8, 0, 0, 0]))
+        }
     }
 }
 
