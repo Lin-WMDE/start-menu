@@ -7,7 +7,6 @@ support = サポート
 
 general = 全般
 app-menu-position = アプリメニューの位置
-search-field-position = 検索フィールドの位置
 applet-button-style = アプレットボタンのスタイル
 user-widget = ユーザーウィジェットの外観
 button-label = ボタンラベル
@@ -18,8 +17,6 @@ select-custom-icon = カスタムアイコンを選択
 select = 選択
 icon-file = アイコンファイル (*.svg, *.png)
 
-top = 上
-bottom = 下
 left = 左
 right = 右
 icon-only = アイコンのみ

@@ -7,7 +7,6 @@ support = Support
 
 general = Allgemein
 app-menu-position = App-Menü-Position
-search-field-position = Suchfeld-Position
 applet-button-style = Applet-Button-Stil
 user-widget = Benutzer-Widget-Darstellung
 button-label = Button-Beschriftung
@@ -18,8 +17,6 @@ select-custom-icon = Benutzerdefiniertes Symbol auswählen
 select = Auswählen
 icon-file = Symboldatei (*.svg, *.png)
 
-top = Oben
-bottom = Unten
 left = Links
 right = Rechts
 icon-only = Nur Symbol

@@ -7,7 +7,6 @@ support = Підтримка
 
 general = Загальні
 app-menu-position = Позиція меню додатків
-search-field-position = Позиція поля пошуку
 applet-button-style = Стиль кнопки аплету
 user-widget = Вигляд віджета користувача
 button-label = Мітка кнопки
@@ -18,8 +17,6 @@ select-custom-icon = Вибрати власну іконку
 select = Вибрати
 icon-file = Файл іконки (*.svg, *.png)
 
-top = Вгорі
-bottom = Внизу
 left = Ліворуч
 right = Праворуч
 icon-only = Лише іконка

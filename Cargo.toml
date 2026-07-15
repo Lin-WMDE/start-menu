@@ -15,20 +15,24 @@ serde = { version = "1.0.228", features = ["derive"] }
 tokio = "1.49.0"
 futures = "0.3.31"
 
-# Unify every libcosmic crate on the WMDE fork (Lin-WMDE/libcosmic@wmde = e7f278d +
-# header_padding). Patch BOTH pop-os URL forms so cosmic-app-list-config's cosmic-config
-# resolves to the same version as ours (fixes the two-cosmic-config type mismatch).
+# Unify every transitive libcosmic pull (cosmic-app-list-config, cosmic-settings-config,
+# etc.) on the local WMDE v2 fork by path, all URL variants, so a single
+# libcosmic/cosmic-config/cosmic-theme resolves in the graph (comp/files pattern).
 [patch."https://github.com/pop-os/libcosmic"]
-libcosmic = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
-cosmic-config = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
-cosmic-config-derive = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
-cosmic-theme = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
+libcosmic = { path = "../libcosmic" }
+cosmic-config = { path = "../libcosmic/cosmic-config" }
+cosmic-config-derive = { path = "../libcosmic/cosmic-config-derive" }
+cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 
 [patch."https://github.com/pop-os/libcosmic.git"]
-libcosmic = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
-cosmic-config = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
-cosmic-config-derive = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
-cosmic-theme = { git = "https://github.com/Lin-WMDE/libcosmic.git", branch = "wmde" }
+libcosmic = { path = "../libcosmic" }
+cosmic-config = { path = "../libcosmic/cosmic-config" }
+cosmic-config-derive = { path = "../libcosmic/cosmic-config-derive" }
+cosmic-theme = { path = "../libcosmic/cosmic-theme" }
+
+[patch."https://github.com/pop-os/libcosmic/"]
+cosmic-config = { path = "../libcosmic/cosmic-config" }
+cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 
 # libcosmic itself pulls cosmic-settings-config from pop-os for its own shortcuts
 # lookup; redirect that transitive copy to the WMDE fork too (A.6) so the whole

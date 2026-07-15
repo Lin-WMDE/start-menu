@@ -7,7 +7,6 @@ support = الدعم
 
 general = عام
 app-menu-position = موضع قائمة التطبيق
-search-field-position = موضع حقل البحث
 applet-button-style = نمط زر التطبيق
 user-widget = مظهر عنصر المستخدم
 button-label = تسمية الزر
@@ -18,8 +17,6 @@ select-custom-icon = اختر أيقونة مخصصة
 select = اختر
 icon-file = ملف أيقونة (*.svg, *.png)
 
-top = أعلى
-bottom = أسفل
 left = يسار
 right = يمين
 icon-only = أيقونة فقط

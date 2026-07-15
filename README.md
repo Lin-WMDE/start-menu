@@ -42,7 +42,7 @@ sudo just install
 A [justfile](./justfile) is included with common recipes:
 
 - `just build-debug` compiles with debug profile
-- `just run` builds and runs the application
+- `just run` builds and runs the applet binary
 - `just check` runs clippy on the project to check for linter warnings
 - `just check-json` can be used by IDEs that support LSP
 

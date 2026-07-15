@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize};
 #[id = "fun.wmde.start-menu"]
 pub struct AppletConfig {
     pub app_menu_position: HorizontalPosition,
-    pub search_field_position: VerticalPosition,
     pub applet_button_style: AppletButtonStyle,
     pub user_widget: UserWidgetStyle,
     pub button_label: String,
@@ -24,14 +23,19 @@ impl Default for AppletConfig {
     fn default() -> Self {
         AppletConfig {
             app_menu_position: HorizontalPosition::default(),
-            search_field_position: VerticalPosition::default(),
             applet_button_style: AppletButtonStyle::default(),
             user_widget: UserWidgetStyle::default(),
             button_label: fl!("menu-label").to_owned(),
-            button_icon: format!("/usr/share/wmde/{}/applet-buttons/default.svg", crate::applet::Applet::APP_ID).to_owned(),
+            button_icon: format!("/usr/share/{}/default.svg", applet_buttons_rel_dir()),
             recent_applications: vec![],
         }
     }
+}
+
+/// XDG data-dir relative directory holding the start-button icon set.
+/// Single source of truth for the applet default, the settings picker and packaging.
+pub fn applet_buttons_rel_dir() -> String {
+    format!("wmde/{}/applet-buttons", crate::applet::Applet::APP_ID)
 }
 
 impl AppletConfig {
@@ -87,18 +91,6 @@ pub enum HorizontalPosition {
 impl Default for HorizontalPosition {
     fn default() -> Self {
         HorizontalPosition::Left
-    }
-}
-
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
-pub enum VerticalPosition {
-    Top,
-    Bottom,
-}
-
-impl Default for VerticalPosition {
-    fn default() -> Self {
-        VerticalPosition::Top
     }
 }
 

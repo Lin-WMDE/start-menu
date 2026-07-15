@@ -7,7 +7,6 @@ support = Support
 
 general = Général
 app-menu-position = Position du menu de l'application
-search-field-position = Position du champ de recherche
 applet-button-style = Style du bouton d'applet
 user-widget = Apparence du widget utilisateur
 button-label = Libellé du bouton
@@ -18,8 +17,6 @@ select-custom-icon = Sélectionner une icône personnalisée
 select = Sélectionner
 icon-file = Fichier d'icône (*.svg, *.png)
 
-top = Haut
-bottom = Bas
 left = Gauche
 right = Droite
 icon-only = Icône seulement

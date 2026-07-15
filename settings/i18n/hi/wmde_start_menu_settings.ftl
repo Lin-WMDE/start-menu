@@ -7,7 +7,6 @@ support = सहायता
 
 general = सामान्य
 app-menu-position = ऐप मेनू स्थिति
-search-field-position = खोज क्षेत्र स्थिति
 applet-button-style = एप्लेट बटन शैली
 user-widget = उपयोगकर्ता विजेट रूप
 button-label = बटन लेबल
@@ -18,8 +17,6 @@ select-custom-icon = कस्टम आइकन चुनें
 select = चुनें
 icon-file = आइकन फ़ाइल (*.svg, *.png)
 
-top = ऊपर
-bottom = नीचे
 left = बाएँ
 right = दाएँ
 icon-only = केवल आइकन

@@ -7,7 +7,6 @@ support = 지원
 
 general = 일반
 app-menu-position = 앱 메뉴 위치
-search-field-position = 검색 필드 위치
 applet-button-style = 애플릿 버튼 스타일
 user-widget = 사용자 위젯 모양
 button-label = 버튼 라벨
@@ -18,8 +17,6 @@ select-custom-icon = 사용자 지정 아이콘 선택
 select = 선택
 icon-file = 아이콘 파일 (*.svg, *.png)
 
-top = 위
-bottom = 아래
 left = 왼쪽
 right = 오른쪽
 icon-only = 아이콘만

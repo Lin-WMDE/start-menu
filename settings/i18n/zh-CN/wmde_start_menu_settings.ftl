@@ -7,7 +7,6 @@ support = 支持
 
 general = 常规
 app-menu-position = 应用菜单位置
-search-field-position = 搜索栏位置
 applet-button-style = 小程序按钮样式
 user-widget = 用户组件外观
 button-label = 按钮标签
@@ -18,8 +17,6 @@ select-custom-icon = 选择自定义图标
 select = 选择
 icon-file = 图标文件 (*.svg, *.png)
 
-top = 顶部
-bottom = 底部
 left = 左侧
 right = 右侧
 icon-only = 仅图标

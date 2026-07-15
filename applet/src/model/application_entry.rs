@@ -75,8 +75,11 @@ impl From<Named> for IconHandle {
     fn from(named: Named) -> IconHandle {
         if let Some(handle) = named.clone().icon().into_svg_handle() {
             IconHandle::SvgHandle(handle)
+        } else if let Some(path) = named.path() {
+            IconHandle::RasterHandle(Handle::from_path(path))
         } else {
-            IconHandle::RasterHandle(Handle::from_path(named.path().unwrap()))
+            // Same fallback as Default: never panic when the theme lookup fails.
+            IconHandle::RasterHandle(Handle::from_rgba(1, 1, vec![0u8, 0, 0, 0]))
         }
     }
 }

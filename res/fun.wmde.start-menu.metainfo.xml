@@ -24,15 +24,15 @@
   <summary xml:lang="sk">Spúšťací applet pre plochu COSMIC™</summary>
   <description>
     <p>WMDE Start Menu is a launcher applet for the COSMIC™ Desktop environment, providing quick access to applications, system functions, and settings. Features include:</p>
-    <p xml:lang="cs">Klasické menu je applet spouštěče pro prostředí COSMIC™, který nabízí rychlý přístup k aplikacím, systémovým funkcím a nastavením. Umožňuje:</p>
-    <p xml:lang="de">Classic Menu ist ein Starter-Applet für die COSMIC™ Desktop-Umgebung und bietet schnellen Zugriff auf Anwendungen, Systemfunktionen und Einstellungen. Funktionen:</p>
-    <p xml:lang="fr">Classic Menu est un applet de lancement pour l'environnement COSMIC™ Desktop, offrant un accès rapide aux applications, fonctions système et paramètres. Fonctionnalités :</p>
-    <p xml:lang="es">Classic Menu es un applet lanzador para el entorno COSMIC™ Desktop, que proporciona acceso rápido a aplicaciones, funciones del sistema y configuraciones. Características:</p>
-    <p xml:lang="ru">Classic Menu — это апплет-лаунчер для среды COSMIC™ Desktop, обеспечивающий быстрый доступ к приложениям, системным функциям и настройкам. Возможности:</p>
-    <p xml:lang="ja">Classic MenuはCOSMIC™ Desktop環境向けのランチャーアプレットで、アプリケーション、システム機能、設定への迅速なアクセスを提供します。主な機能：</p>
-    <p xml:lang="hu">A Classic Menu egy indító kisalkalmazás a COSMIC™ asztali környezethez, amely gyors hozzáférést biztosít az alkalmazásokhoz, rendszerfunkciókhoz és beállításokhoz. Jellemzők:</p>
-    <p xml:lang="pl">Classic Menu to aplet uruchamiający dla środowiska COSMIC™ Desktop, zapewniający szybki dostęp do aplikacji, funkcji systemowych i ustawień. Funkcje:</p>
-    <p xml:lang="sk">Classic Menu je spúšťací applet pre prostredie COSMIC™ Desktop, ktorý poskytuje rýchly prístup k aplikáciám, systémovým funkciám a nastaveniam. Funkcie:</p>
+    <p xml:lang="cs">WMDE Start Menu je applet spouštěče pro prostředí COSMIC™, který nabízí rychlý přístup k aplikacím, systémovým funkcím a nastavením. Umožňuje:</p>
+    <p xml:lang="de">WMDE Start Menu ist ein Starter-Applet für die COSMIC™ Desktop-Umgebung und bietet schnellen Zugriff auf Anwendungen, Systemfunktionen und Einstellungen. Funktionen:</p>
+    <p xml:lang="fr">WMDE Start Menu est un applet de lancement pour l'environnement COSMIC™ Desktop, offrant un accès rapide aux applications, fonctions système et paramètres. Fonctionnalités :</p>
+    <p xml:lang="es">WMDE Start Menu es un applet lanzador para el entorno COSMIC™ Desktop, que proporciona acceso rápido a aplicaciones, funciones del sistema y configuraciones. Características:</p>
+    <p xml:lang="ru">WMDE Start Menu — это апплет-лаунчер для среды COSMIC™ Desktop, обеспечивающий быстрый доступ к приложениям, системным функциям и настройкам. Возможности:</p>
+    <p xml:lang="ja">WMDE Start MenuはCOSMIC™ Desktop環境向けのランチャーアプレットで、アプリケーション、システム機能、設定への迅速なアクセスを提供します。主な機能：</p>
+    <p xml:lang="hu">A WMDE Start Menu egy indító kisalkalmazás a COSMIC™ asztali környezethez, amely gyors hozzáférést biztosít az alkalmazásokhoz, rendszerfunkciókhoz és beállításokhoz. Jellemzők:</p>
+    <p xml:lang="pl">WMDE Start Menu to aplet uruchamiający dla środowiska COSMIC™ Desktop, zapewniający szybki dostęp do aplikacji, funkcji systemowych i ustawień. Funkcje:</p>
+    <p xml:lang="sk">WMDE Start Menu je spúšťací applet pre prostredie COSMIC™ Desktop, ktorý poskytuje rýchly prístup k aplikáciám, systémovým funkciám a nastaveniam. Funkcie:</p>
     <ul>
       <li>Browse and launch installed applications via a clear menu</li>
       <li>Search for apps by name or category</li>
@@ -137,18 +137,17 @@
   <launchable type="desktop-id">
     fun.wmde.start-menu.desktop
   </launchable>
-  <icon type="stock">fun.wmde.start-menu.svg</icon>
+  <icon type="stock">fun.wmde.start-menu</icon>
   <screenshots>
     <screenshot type="default">
       <image>
-        https://raw.githubusercontent.com/Lin-WMDE/start-menu/master/screenshots/wmde-start-menu.png
+        https://raw.githubusercontent.com/Lin-WMDE/wmde-start-menu/wmde/screenshots/wmde-start-menu.png
       </image>
       <caption>Main menu screenshot</caption>
       <caption xml:lang="cs">Hlavní menu</caption>
      </screenshot>
   </screenshots>
   <provides>
-    <id>fun.wmde.Applet</id>
     <binary>wmde-start-menu-applet</binary>
     <binary>wmde-start-menu-settings</binary>
   </provides>

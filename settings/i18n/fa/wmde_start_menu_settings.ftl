@@ -7,7 +7,6 @@ support = پشتیبانی
 
 general = عمومی
 app-menu-position = موقعیت منوی برنامه
-search-field-position = موقعیت فیلد جستجو
 applet-button-style = سبک دکمه اپلت
 user-widget = ظاهر ویجت کاربر
 button-label = برچسب دکمه
@@ -18,8 +17,6 @@ select-custom-icon = انتخاب آیکون سفارشی
 select = انتخاب
 icon-file = فایل آیکون (*.svg, *.png)
 
-top = بالا
-bottom = پایین
 left = چپ
 right = راست
 icon-only = فقط آیکون

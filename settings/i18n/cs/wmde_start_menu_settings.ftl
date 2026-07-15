@@ -7,7 +7,6 @@ support = Podpora
 
 general = Obecné
 app-menu-position = Pozice menu aplikace
-search-field-position = Pozice vyhledávacího pole
 applet-button-style = Styl tlačítka appletu
 user-widget = Vzhled uživatelského widgetu
 button-label = Popisek tlačítka
@@ -18,8 +17,6 @@ select-custom-icon = Vybrat vlastní ikonu
 select = Vybrat
 icon-file = Soubor ikony (*.svg, *.png)
 
-top = Nahoře
-bottom = Dole
 left = Vlevo
 right = Vpravo
 icon-only = Pouze ikona

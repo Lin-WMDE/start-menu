@@ -7,7 +7,6 @@ support = Támogatás
 
 general = Általános
 app-menu-position = Alkalmazásmenü pozíciója
-search-field-position = Keresőmező pozíciója
 applet-button-style = Applet gomb stílusa
 user-widget = Felhasználói widget megjelenése
 button-label = Gomb felirat
@@ -18,8 +17,6 @@ select-custom-icon = Egyéni ikon kiválasztása
 select = Kiválasztás
 icon-file = Ikonfájl (*.svg, *.png)
 
-top = Fent
-bottom = Lent
 left = Bal
 right = Jobb
 icon-only = Csak ikon

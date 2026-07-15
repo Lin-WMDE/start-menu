@@ -7,7 +7,6 @@ support = Podrška
 
 general = Opšte
 app-menu-position = Pozicija menija
-search-field-position = Pozicija polja za pretragu
 applet-button-style = Stil dugmeta apleta
 user-widget = Izgled korisničkog vidžeta
 button-label = Oznaka dugmeta
@@ -18,8 +17,6 @@ select-custom-icon = Izaberite prilagođenu ikonicu
 select = Izaberite
 icon-file = Fajl ikonice (*.svg, *.png)
 
-top = Gore
-bottom = Dole
 left = Levo
 right = Desno
 icon-only = Samo ikonica

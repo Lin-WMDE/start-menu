@@ -19,21 +19,58 @@ pub struct VirtualizedAppList;
 
 impl VirtualizedAppList {
     /// Number of columns in the application grid
-    const COLS: usize = 4;
+    pub const COLS: usize = 4;
     /// Tile height (icon + up to two label lines)
-    const TILE_HEIGHT: f32 = 96.0;
+    pub const TILE_HEIGHT: f32 = 96.0;
+    /// Extra rows rendered above/below the visible window
+    const OVERSCAN_ROWS: usize = 2;
+    /// Assumed viewport height for the first frame, before any ScrollUpdated arrives
+    const FALLBACK_VIEWPORT: f32 = 800.0;
 
     pub fn view(applet: &Applet) -> Element<'_, Message> {
         let Spacing {
             space_xs, space_s, ..
         } = theme::active().cosmic().spacing;
 
-        let mut grid = column![].spacing(space_xs as f32).width(Length::Fill);
+        let spacing = space_xs as f32;
+        let row_h = Self::TILE_HEIGHT + spacing;
+        let apps = &applet.available_applications;
+        let total_rows = apps.len().div_ceil(Self::COLS);
 
-        for chunk in applet.available_applications.chunks(Self::COLS) {
-            let mut r = row![].spacing(space_xs as f32).width(Length::Fill);
-            for app in chunk.iter() {
-                r = r.push(Self::create_app_tile(applet, app));
+        // Windowed rendering: only build tiles (and clone their context menus)
+        // for the rows near the viewport; spacers keep the scrollbar geometry.
+        let viewport_h = if applet.scroll_viewport_height > 0.0 {
+            applet.scroll_viewport_height
+        } else {
+            Self::FALLBACK_VIEWPORT
+        };
+        let first_row = ((applet.scroll_offset / row_h).floor().max(0.0) as usize)
+            .saturating_sub(Self::OVERSCAN_ROWS)
+            .min(total_rows);
+        let last_row = ((((applet.scroll_offset + viewport_h) / row_h).ceil() as usize)
+            + Self::OVERSCAN_ROWS)
+            .min(total_rows);
+
+        let mut grid = column![].spacing(spacing).width(Length::Fill);
+
+        if first_row > 0 {
+            // first_row rows plus the inter-row spacing the column would have added
+            let h = first_row as f32 * row_h - spacing;
+            grid = grid.push(
+                cosmic::widget::Space::new()
+                    .width(Length::Fill)
+                    .height(Length::Fixed(h)),
+            );
+        }
+        for (row_i, chunk) in apps
+            .chunks(Self::COLS)
+            .enumerate()
+            .skip(first_row)
+            .take(last_row.saturating_sub(first_row))
+        {
+            let mut r = row![].spacing(spacing).width(Length::Fill);
+            for (col_i, app) in chunk.iter().enumerate() {
+                r = r.push(Self::create_app_tile(applet, app, row_i * Self::COLS + col_i));
             }
             // pad the last row so columns stay aligned
             for _ in chunk.len()..Self::COLS {
@@ -44,6 +81,14 @@ impl VirtualizedAppList {
                 );
             }
             grid = grid.push(r);
+        }
+        if last_row < total_rows {
+            let h = (total_rows - last_row) as f32 * row_h - spacing;
+            grid = grid.push(
+                cosmic::widget::Space::new()
+                    .width(Length::Fill)
+                    .height(Length::Fixed(h)),
+            );
         }
 
         scrollable(container(grid).padding([0., space_s as f32]))
@@ -57,6 +102,7 @@ impl VirtualizedAppList {
     fn create_app_tile<'a>(
         applet: &'a Applet,
         app: &'a Arc<ApplicationEntry>,
+        index: usize,
     ) -> Element<'a, Message> {
         let icon = Self::create_icon_widget(app, 40);
         let label = text(&app.name)
@@ -64,6 +110,8 @@ impl VirtualizedAppList {
             .width(Length::Fill)
             .align_x(Horizontal::Center);
 
+        // Highlight the keyboard-selected tile
+        let selected = applet.selected_item_index == Some(index);
         let tile = cosmic::widget::button::custom(
             column![icon, label]
                 .spacing(4)
@@ -71,7 +119,11 @@ impl VirtualizedAppList {
                 .width(Length::Fill),
         )
         .on_press(Message::ApplicationSelected(app.clone()))
-        .class(cosmic::theme::Button::AppletMenu)
+        .class(if selected {
+            cosmic::theme::Button::Suggested
+        } else {
+            cosmic::theme::Button::AppletMenu
+        })
         .width(Length::Fill)
         .height(Length::Fixed(Self::TILE_HEIGHT));
 

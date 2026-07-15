@@ -7,7 +7,6 @@ support = Destek
 
 general = Genel
 app-menu-position = Uygulama menüsü konumu
-search-field-position = Arama alanı konumu
 applet-button-style = Uygulama düğmesi stili
 user-widget = Kullanıcı widget'ı görünümü
 button-label = Düğme etiketi
@@ -18,8 +17,6 @@ select-custom-icon = Özel bir simge seç
 select = Seç
 icon-file = Simge dosyası (*.svg, *.png)
 
-top = Üst
-bottom = Alt
 left = Sol
 right = Sağ
 icon-only = Sadece simge

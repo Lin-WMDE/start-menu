@@ -7,7 +7,6 @@ support = ಬೆಂಬಲ
 
 general = ಸಾಮಾನ್ಯ
 app-menu-position = ಅಪ್ಲಿಕೇಶನ್ ಮೆನು ಸ್ಥಾನ
-search-field-position = ಹುಡುಕಾಟ ಕ್ಷೇತ್ರದ ಸ್ಥಾನ
 applet-button-style = ಅಪ್ಲೆಟ್ ಬಟನ್ ಶೈಲಿ
 user-widget = ಬಳಕೆದಾರ ವಿಜೆಟ್ ರೂಪ
 button-label = ಬಟನ್ ಲೇಬಲ್
@@ -18,8 +17,6 @@ select-custom-icon = ಕಸ್ಟಮ್ ಐಕಾನ್ ಆಯ್ಕೆಮಾಡ
 select = ಆಯ್ಕೆಮಾಡಿ
 icon-file = ಐಕಾನ್ ಫೈಲ್ (*.svg, *.png)
 
-top = ಮೇಲ್ಭಾಗ
-bottom = ಕೆಳಭಾಗ
 left = ಎಡ
 right = ಬಲ
 icon-only = ಐಕಾನ್ ಮಾತ್ರ

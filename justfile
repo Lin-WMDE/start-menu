@@ -29,13 +29,13 @@ check *args: fmt
 # Runs a clippy check with JSON message format
 check-json: (check '--message-format=json')
 
-# Run with args
+# Run the applet with args
 run *args:
-    cargo run {{args}}
+    cargo run -p wmde-start-menu-applet {{args}}
 
-# Run with debug logs
+# Run the applet with debug logs (simple_logger parses RUST_LOG as a bare level)
 run-logs *args:
-    env RUST_LOG=cosmic_tasks=info RUST_BACKTRACE=full cargo run --release {{args}}
+    env RUST_LOG=info RUST_BACKTRACE=full cargo run --release -p wmde-start-menu-applet {{args}}
 
 spellcheck *args:
 	@codespell --skip="./i18n" --skip="./.git" --skip="./target" --builtin clear,rare,informal,code --ignore-words-list mut,crate {{args}}

@@ -59,22 +59,23 @@ uninstall:
 # Installs files locally
 [no-cd]
 install-local:
-    install -Dm0755  ~/.local/bin/{{name}}-applet
-    install -Dm0755  ~/.local/bin/{{name}}-settings
-    install -Dm0644  ${XDG_DATA_HOME:-~/.local/share}/{{desktop-path}}
-    install -Dm0644  ${XDG_DATA_HOME:-~/.local/share}/{{metainfo-path}}
-    install -Dm0644  ${XDG_DATA_HOME:-~/.local/share}/{{icons-dst}}
+    install -Dm0755 {{bin-src}} ~/.local/bin/{{name}}-applet
+    install -Dm0755 {{settings-bin-src}} ~/.local/bin/{{name}}-settings
+    install -Dm0644 {{desktop-src}} ${XDG_DATA_HOME:-~/.local/share}/applications/{{desktop}}
+    install -Dm0644 {{metainfo-src}} ${XDG_DATA_HOME:-~/.local/share}/metainfo/{{metainfo}}
+    install -Dm0644 {{icons-src}} ${XDG_DATA_HOME:-~/.local/share}/icons/hicolor/scalable/apps/{{icons}}
     for icon in {{button-icons-src}}/*.svg; do \
-        install -Dm0644 "$icon" "{{base-dir}}/share/wmde/{{APPID}}/applet-buttons/$(basename "$icon")"; \
+        install -Dm0644 "$icon" "${XDG_DATA_HOME:-~/.local/share}/wmde/{{APPID}}/applet-buttons/$(basename "$icon")"; \
     done
 
 # Uninstalls locally installed files
 uninstall-local:
     rm ~/.local/bin/{{name}}-applet
     rm ~/.local/bin/{{name}}-settings
-    rm ${XDG_DATA_HOME:-~/.local/share}/{{desktop-path}}
-    rm ${XDG_DATA_HOME:-~/.local/share}/{{metainfo-path}}
-    rm ${XDG_DATA_HOME:-~/.local/share}/{{icons-dst}}
+    rm ${XDG_DATA_HOME:-~/.local/share}/applications/{{desktop}}
+    rm ${XDG_DATA_HOME:-~/.local/share}/metainfo/{{metainfo}}
+    rm ${XDG_DATA_HOME:-~/.local/share}/icons/hicolor/scalable/apps/{{icons}}
+    rm -rf "${XDG_DATA_HOME:-~/.local/share}/wmde/{{APPID}}"
 
 
 # Compiles release profile with vendored dependencies

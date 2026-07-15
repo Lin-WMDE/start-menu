@@ -7,7 +7,6 @@ support = 支援
 
 general = 一般
 app-menu-position = 應用程式選單位置
-search-field-position = 搜尋欄位置
 applet-button-style = 小程式按鈕樣式
 user-widget = 使用者小工具外觀
 button-label = 按鈕標籤
@@ -18,8 +17,6 @@ select-custom-icon = 選擇自訂圖示
 select = 選擇
 icon-file = 圖示檔案 (*.svg, *.png)
 
-top = 上方
-bottom = 下方
 left = 左側
 right = 右側
 icon-only = 僅圖示

@@ -11,7 +11,8 @@ use cosmic::widget::{container, menu};
 use cosmic::{Element, theme};
 
 use crate::applet::{Applet, Message};
-use crate::config::{HorizontalPosition, VerticalPosition};
+use crate::config::HorizontalPosition;
+use crate::model::system_tool::SystemTool;
 use crate::fl;
 use crate::model::power_action::PowerAction;
 use crate::widgets::VirtualizedAppList;
@@ -60,9 +61,7 @@ impl AppletMenu {
         include_bytes!("../../res/icons/bundled/user-idle-symbolic.svg");
 
     pub fn view_main_menu_list(applet: &Applet) -> Element<'_, Message> {
-        let Spacing {
-            space_xxs, space_s, ..
-        } = theme::active().cosmic().spacing;
+        let Spacing { space_xxs, .. } = theme::active().cosmic().spacing;
 
         let current_user = AppletMenu::create_logged_user_widget(applet);
         let search_field = AppletMenu::create_search_field(applet);
@@ -75,26 +74,19 @@ impl AppletMenu {
                 .width(Length::Shrink)
                 .padding(8);
 
-        let settings_button: Element<'_, Message> = applet
-            .available_applications
-            .iter()
-            .find(|a| a.id == "fun.wmde.Settings")
-            .map(|app| -> Element<'_, Message> {
-                cosmic::widget::button::custom(
-                    crate::widgets::virtualized_app_list::VirtualizedAppList::create_icon_widget(
-                        app, 24,
-                    ),
-                )
-                .on_press(Message::ApplicationSelected(app.clone()))
-                .class(cosmic::theme::Button::AppletMenu)
-                .into()
-            })
-            .unwrap_or_else(|| {
-                cosmic::widget::Space::new()
-                    .width(Length::Fixed(0.0))
-                    .height(Length::Fixed(0.0))
-                    .into()
-            });
+        // WMDE: static gear that always opens WMDE Settings, independent of the
+        // (search/category filtered) application list.
+        let settings_button: Element<'_, Message> = cosmic::widget::button::custom(
+            cosmic::widget::icon::icon(
+                cosmic::widget::icon::from_name("preferences-system-symbolic")
+                    .size(24)
+                    .handle(),
+            )
+            .size(24),
+        )
+        .on_press(Message::LaunchTool(SystemTool::SYSTEM_SETTINGS))
+        .class(cosmic::theme::Button::AppletMenu)
+        .into();
 
         let header = container(
             row![
@@ -191,11 +183,10 @@ impl AppletMenu {
     }
 
     fn create_search_field(applet: &Applet) -> Element<'_, Message> {
-        let Spacing {
-            space_xxs, space_s, ..
-        } = theme::active().cosmic().spacing;
+        let Spacing { space_s, .. } = theme::active().cosmic().spacing;
 
         cosmic::widget::search_input(fl!("search-placeholder"), &applet.search_field)
+            .always_active()
             .on_input(Message::SearchFieldInput)
             .on_clear(Message::SearchCleared)
             .width(Length::Fill)

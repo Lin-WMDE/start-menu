@@ -16,6 +16,9 @@ depends=('glibc' 'gcc-libs' 'libxkbcommon' 'wayland' 'mesa' 'fontconfig' 'freety
 makedepends=('rust' 'cargo' 'just' 'git' 'clang' 'lld' 'pkgconf' 'mesa' 'wayland'
              'libxkbcommon' 'fontconfig' 'freetype2' 'expat')
 optdepends=('wmde-panel: run as a WMDE panel applet')
+# NOTE: Cargo.toml uses path deps to sibling checkouts (../libcosmic,
+# ../wmde-settings-daemon, ../wmde-applets). The build harness arranges them next
+# to $srcdir; a standalone makepkg run without that layout fails dependency resolution.
 source=("$pkgname::git+https://github.com/Lin-WMDE/wmde-start-menu.git#branch=wmde")
 sha256sums=('SKIP')
 

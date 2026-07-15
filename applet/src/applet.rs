@@ -262,6 +262,8 @@ impl Application for Applet {
             }
             Message::UpdateAvailableApplications(items) => {
                 self.available_applications = items;
+                // The list changed under the selection; a stale index must not survive.
+                self.selected_item_index = None;
 
                 // Build and cache context menus for each application once
                 self.context_menus.clear();
@@ -326,12 +328,12 @@ impl Application for Applet {
             Message::SelectPreviousApp => self.select_previous_app(),
             Message::SelectNextApp => self.select_next_app(),
             Message::LaunchSelectedApplication => {
-                dbg!(self.selected_item_index);
-                if let Some(index) = self.selected_item_index {
-                    let selected_application =
-                        self.available_applications.get(index).unwrap().clone();
-
-                    return self.launch_application(selected_application, None);
+                if let Some(app) = self
+                    .selected_item_index
+                    .and_then(|index| self.available_applications.get(index))
+                    .cloned()
+                {
+                    return self.launch_application(app, None);
                 }
 
                 Task::none()
@@ -563,6 +565,10 @@ impl Applet {
             return self.clear_search();
         }
 
+        // Keep the shadow offset in sync with the snap_to below, otherwise the
+        // windowed grid renders a phantom top spacer until the next scroll event.
+        self.scroll_offset = 0.0;
+
         Task::batch([
             // reset scroll position
             cosmic::iced::widget::operation::snap_to(
@@ -619,24 +625,21 @@ impl Applet {
         app: Arc<ApplicationEntry>,
         action: Option<DesktopAction>,
     ) -> Task<Message> {
-        let mut app_exec = if action.is_some() {
-            action
-                .unwrap()
-                .exec
-                .clone()
-                .split_whitespace()
-                .filter(|arg| !arg.starts_with('%'))
-                .collect::<Vec<_>>()
-                .join(" ")
-        } else {
-            app.exec
-                .clone()
-                .unwrap()
-                .split_whitespace()
-                .filter(|arg| !arg.starts_with('%'))
-                .collect::<Vec<_>>()
-                .join(" ")
+        let raw_exec = match action {
+            Some(action) => action.exec.clone(),
+            None => match app.exec.clone() {
+                Some(exec) => exec,
+                None => {
+                    log::error!("desktop entry '{}' has no Exec=; cannot launch", app.id);
+                    return Task::none();
+                }
+            },
         };
+        let mut app_exec = raw_exec
+            .split_whitespace()
+            .filter(|arg| !arg.starts_with('%'))
+            .collect::<Vec<_>>()
+            .join(" ");
         let env_vars: Vec<(String, String)> = std::env::vars().collect();
         let app_id = Some(app.id.clone());
         let mut is_terminal = app.is_terminal;
@@ -693,15 +696,21 @@ impl Applet {
             });
         }
 
-        self.config
-            .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-            .expect("Failed to write recent applications config");
+        if let Some(handler) = AppletConfig::config_handler().as_ref() {
+            if let Err(err) = self.config.write_entry(handler) {
+                log::error!("failed to write recent applications config: {err}");
+            }
+        } else {
+            log::error!("config handler unavailable; recent applications not persisted");
+        }
     }
 
     fn select_category(&mut self, category: ApplicationCategory) -> Task<Message> {
         self.search_field.clear();
         self.selected_category = Some(category.clone());
         self.selected_item_index = None;
+        // Same shadow-offset sync as update_search_field (windowed grid).
+        self.scroll_offset = 0.0;
 
         Task::batch([
             // reset scroll position
@@ -770,82 +779,80 @@ impl Applet {
     }
 
     fn select_previous_app(&mut self) -> cosmic::Task<cosmic::Action<Message>> {
-        if self.selected_item_index.is_none() {
+        if self.available_applications.is_empty() {
+            self.selected_item_index = None;
+            return Task::none();
+        }
+        let cols = crate::widgets::VirtualizedAppList::COLS;
+        match self.selected_item_index {
+            None => return Task::none(),
+            Some(index) => {
+                if let Some(prev) = index.checked_sub(cols) {
+                    self.selected_item_index = Some(prev);
+                }
+            }
+        }
+        self.scroll_selected_into_view()
+    }
+
+    // Scroll the grid so the keyboard-selected row is visible (grid geometry:
+    // COLS tiles per row, TILE_HEIGHT plus inter-row spacing per row).
+    fn scroll_selected_into_view(&mut self) -> cosmic::Task<cosmic::Action<Message>> {
+        let Some(index) = self.selected_item_index else {
+            return Task::none();
+        };
+        let spacing = cosmic::theme::active().cosmic().spacing.space_xs as f32;
+        let row_h = crate::widgets::VirtualizedAppList::TILE_HEIGHT + spacing;
+        let row = (index / crate::widgets::VirtualizedAppList::COLS) as f32;
+        let viewport_height = self.scroll_viewport_height.max(row_h);
+        let visible_top = self.scroll_offset;
+        let visible_bottom = visible_top + viewport_height;
+
+        let selected_top = row * row_h;
+        let selected_bottom = selected_top + row_h;
+
+        if selected_top >= visible_top && selected_bottom <= visible_bottom {
             return Task::none();
         }
 
-        if let Some(index) = self.selected_item_index {
-            if index > 0 {
-                self.selected_item_index = Some(index - 1);
-            }
-        }
+        let target_offset = (if selected_top < visible_top {
+            selected_top
+        } else {
+            selected_bottom - viewport_height
+        })
+        .max(0.0);
+        // Keep our own offset in sync so the render window follows keyboard
+        // scrolling even before the next ScrollUpdated event arrives.
+        self.scroll_offset = target_offset;
 
-        if let Some(index) = self.selected_item_index {
-            let spacing = cosmic::theme::active().cosmic().spacing;
-            let item_height = spacing.space_xl as f32;
-            let viewport_height = self.scroll_viewport_height.max(item_height);
-            let visible_top = self.scroll_offset;
-            let visible_bottom = visible_top + viewport_height;
-
-            let selected_top = index as f32 * item_height;
-            let selected_bottom = selected_top + item_height;
-
-            if selected_top >= visible_top && selected_bottom <= visible_bottom {
-                return Task::none();
-            }
-
-            let target_offset = if selected_top < visible_top {
-                selected_top
-            } else {
-                selected_bottom - viewport_height
-            };
-
-            return Task::batch([cosmic::iced::widget::operation::scroll_to(
-                self.scrollable_id.clone(),
-                AbsoluteOffset { x: 0., y: target_offset },
-            )]);
-        }
-
-        Task::none()
+        Task::batch([cosmic::iced::widget::operation::scroll_to(
+            self.scrollable_id.clone(),
+            AbsoluteOffset { x: 0., y: target_offset },
+        )])
     }
 
     fn select_next_app(&mut self) -> cosmic::Task<cosmic::Action<Message>> {
-        if self.selected_item_index.is_none() && !self.available_applications.is_empty() {
-            self.selected_item_index = Some(0);
-        } else if let Some(index) = self.selected_item_index {
-            if index < self.available_applications.len() - 1 {
-                self.selected_item_index = Some(index + 1);
-            }
+        let len = self.available_applications.len();
+        if len == 0 {
+            self.selected_item_index = None;
+            return Task::none();
         }
-
-        if let Some(index) = self.selected_item_index {
-            let spacing = cosmic::theme::active().cosmic().spacing;
-            let item_height = spacing.space_xl as f32;
-            let viewport_height = self.scroll_viewport_height.max(item_height);
-            let visible_top = self.scroll_offset;
-            let visible_bottom = visible_top + viewport_height;
-
-            let selected_top = index as f32 * item_height;
-            let selected_bottom = selected_top + item_height;
-
-            if selected_top >= visible_top && selected_bottom <= visible_bottom {
-                return Task::none();
+        let cols = crate::widgets::VirtualizedAppList::COLS;
+        self.selected_item_index = Some(match self.selected_item_index {
+            None => 0,
+            Some(index) => {
+                let next = index + cols;
+                if next < len {
+                    next
+                } else if index / cols < (len - 1) / cols {
+                    // Partial last row: clamp to the last item so every tile
+                    // is reachable from any column.
+                    len - 1
+                } else {
+                    index
+                }
             }
-
-            let target_offset = if selected_top < visible_top {
-                selected_top
-            } else {
-                selected_bottom - viewport_height
-            };
-
-            dbg!(target_offset);
-
-            return Task::batch([cosmic::iced::widget::operation::scroll_to(
-                self.scrollable_id.clone(),
-                AbsoluteOffset { x: 0., y: target_offset + 16.0 },
-            )]);
-        }
-
-        Task::none()
+        });
+        self.scroll_selected_into_view()
     }
 }

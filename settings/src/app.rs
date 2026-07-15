@@ -10,7 +10,6 @@ use cosmic::widget::{button, icon, menu, menu::{ItemWidth, ItemHeight}};
 use cosmic::{iced::Background, widget::text, Element};
 use wmde_start_menu_applet::config::{
     AppletButtonStyle, AppletConfig, HorizontalPosition, UserWidgetStyle,
-    VerticalPosition,
 };
 use std::collections::HashMap;
 use std::fs;
@@ -35,9 +34,9 @@ pub struct AppModel {
 #[derive(Debug, Clone)]
 pub enum Message {
     UpdateConfig(AppletConfig),
+    ResetToDefaults,
     LaunchUrl(String),
     AppPositionChanged(HorizontalPosition),
-    SearchFieldPositionChanged(VerticalPosition),
     AppletButtonStyleChanged(usize),
     UserWidgetChanged(usize),
     ButtonLabelChanged(String),
@@ -45,6 +44,18 @@ pub enum Message {
     OpenIconPicker,
     ButtonIconChanged(PathBuf),
     CustomIconSelected,
+}
+
+/// Persist the applet config, logging instead of panicking when the config
+/// backend is unavailable (read-only home, missing config dir, etc).
+fn write_applet_config(config: &AppletConfig) {
+    if let Some(handler) = AppletConfig::config_handler().as_ref() {
+        if let Err(err) = config.write_entry(handler) {
+            log::error!("failed to write applet config: {err}");
+        }
+    } else {
+        log::error!("config handler unavailable; applet config not persisted");
+    }
 }
 
 /// Create a COSMIC application from the app model
@@ -148,22 +159,6 @@ impl cosmic::Application for AppModel {
                 Message::AppPositionChanged
             )
         ];
-        let search_field_position = cosmic::iced::widget::row![
-            cosmic::widget::Space::new().width(Length::Fill).height(5),
-            cosmic::widget::Radio::new(
-                cosmic::widget::text::heading(fl!("top")),
-                VerticalPosition::Top,
-                Some(self.config.search_field_position),
-                Message::SearchFieldPositionChanged
-            ),
-            cosmic::widget::Space::new().width(5).height(Length::Shrink),
-            cosmic::widget::Radio::new(
-                cosmic::widget::text::heading(fl!("bottom")),
-                VerticalPosition::Bottom,
-                Some(self.config.search_field_position),
-                Message::SearchFieldPositionChanged
-            )
-        ];
         let applet_button_style = cosmic::iced::widget::row![
             cosmic::widget::Space::new().width(Length::Fill).height(5),
             cosmic::widget::dropdown(
@@ -206,10 +201,6 @@ impl cosmic::Application for AppModel {
                 .add(cosmic::widget::settings::item(
                     fl!("app-menu-position"),
                     app_menu_position,
-                ))
-                .add(cosmic::widget::settings::item(
-                    fl!("search-field-position"),
-                    search_field_position,
                 ))
                 .add(cosmic::widget::settings::item(
                     fl!("applet-button-style"),
@@ -262,9 +253,16 @@ impl cosmic::Application for AppModel {
             Message::UpdateConfig(config) => {
                 self.config = config;
 
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write recent applications config");
+                write_applet_config(&self.config);
+
+                Task::none()
+            }
+            Message::ResetToDefaults => {
+                // Preserve recents across a settings reset: they are history, not a setting.
+                let recents = std::mem::take(&mut self.config.recent_applications);
+                self.config = AppletConfig::default();
+                self.config.recent_applications = recents;
+                write_applet_config(&self.config);
 
                 Task::none()
             }
@@ -281,19 +279,7 @@ impl cosmic::Application for AppModel {
                 log::info!("App position changed to: {:?}", horizontal_position);
                 self.config.app_menu_position = horizontal_position;
 
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write recent applications config");
-
-                Task::none()
-            }
-            Message::SearchFieldPositionChanged(vertical_position) => {
-                log::info!("Search field position changed to: {:?}", vertical_position);
-                self.config.search_field_position = vertical_position;
-
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write search field position config");
+                write_applet_config(&self.config);
 
                 Task::none()
             }
@@ -307,9 +293,7 @@ impl cosmic::Application for AppModel {
                     _ => AppletButtonStyle::Auto,
                 };
 
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write applet button style config");
+                write_applet_config(&self.config);
 
                 Task::none()
             }
@@ -322,9 +306,7 @@ impl cosmic::Application for AppModel {
                     _ => UserWidgetStyle::None,
                 };
 
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write user widget style config");
+                write_applet_config(&self.config);
 
                 Task::none()
             }
@@ -338,9 +320,7 @@ impl cosmic::Application for AppModel {
                 log::info!("Button label changed to: {:?}", new_label);
                 self.config.button_label = new_label;
 
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write button label config");
+                write_applet_config(&self.config);
 
                 Task::none()
             }
@@ -351,9 +331,7 @@ impl cosmic::Application for AppModel {
                 );
                 self.config.button_icon = new_icon.to_string_lossy().into_owned();
 
-                self.config
-                    .write_entry(AppletConfig::config_handler().as_ref().unwrap())
-                    .expect("Failed to write button icon config");
+                write_applet_config(&self.config);
 
                 Task::none()
             }
@@ -400,6 +378,12 @@ impl AppModel {
         // variable isn't set, fall back to common locations including /usr and
         // /app so we cover both host and Flatpak runtimes.
         let mut candidate_dirs: Vec<String> = Vec::new();
+        // User-local icons first (this is where install-local puts them).
+        if let Ok(home) = std::env::var("XDG_DATA_HOME") {
+            candidate_dirs.push(home.trim_end_matches('/').to_string());
+        } else if let Ok(home) = std::env::var("HOME") {
+            candidate_dirs.push(format!("{}/.local/share", home.trim_end_matches('/')));
+        }
         if let Ok(xdg) = std::env::var("XDG_DATA_DIRS") {
             for part in xdg.split(':') {
                 let part = part.trim_end_matches('/');
@@ -413,7 +397,11 @@ impl AppModel {
         }
 
         for data_dir in candidate_dirs {
-            let dir = format!("{}/cosmic/{}/applet-buttons", data_dir, wmde_start_menu_applet::applet::APP_ID);
+            let dir = format!(
+                "{}/{}",
+                data_dir,
+                wmde_start_menu_applet::config::applet_buttons_rel_dir()
+            );
             if let Ok(entries) = fs::read_dir(&dir) {
                 for entry in entries.flatten() {
                     let path = entry.path();
@@ -437,7 +425,7 @@ impl AppModel {
         if let Ok(result) = cosmic::dialog::file_chooser::open::Dialog::new()
             .title(fl!("select-custom-icon"))
             .accept_label(fl!("select"))
-            .current_filter(FileFilter::new("icon-file").glob("*.svg").glob("*.png"))
+            .current_filter(FileFilter::new(&fl!("icon-file")).glob("*.svg").glob("*.png"))
             .open_file()
             .await
         {
@@ -589,9 +577,7 @@ impl menu::action::MenuAction for MenuAction {
     fn message(&self) -> Self::Message {
         match self {
             MenuAction::About => Message::ToggleContextPage(ContextPage::About),
-            MenuAction::SetDefaultSettings => {
-                Message::UpdateConfig(AppletConfig::default())
-            }
+            MenuAction::SetDefaultSettings => Message::ResetToDefaults,
         }
     }
 }
