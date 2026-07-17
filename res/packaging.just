@@ -1,9 +1,10 @@
 rootdir := ''
 prefix := '/usr'
 base-dir := absolute_path(clean(rootdir / prefix))
+cargo-target-dir := env('CARGO_TARGET_DIR', 'target')
 
-bin-src := 'target' / 'release' / name+ '-applet'
-settings-bin-src := 'target' / 'release' / name + '-settings'
+bin-src := cargo-target-dir / 'release' / name+ '-applet'
+settings-bin-src := cargo-target-dir / 'release' / name + '-settings'
 bin-path := 'bin' / name 
 bin-dst := base-dir / bin-path + '-applet'
 settings-bin-dst := base-dir / bin-path + '-settings'
