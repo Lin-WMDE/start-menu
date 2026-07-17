@@ -104,7 +104,6 @@ dependencies = [
 [[package]]
 name = "accounts-zbus"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings?rev=eed01dd3609e90e3c8cd043656734c500956c793#eed01dd3609e90e3c8cd043656734c500956c793"
 dependencies = [
  "zbus",
 ]
@@ -1015,7 +1014,6 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#db97fd5974702a966cfaf9bd342ab7a4c80f55fa"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -6736,7 +6734,6 @@ checksum = "2fb433233f2df9344722454bc7e96465c9d03bff9d77c248f9e7523fe79585b5"
 [[package]]
 name = "xdg-shell-wrapper-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#db97fd5974702a966cfaf9bd342ab7a4c80f55fa"
 dependencies = [
  "serde",
  "wayland-protocols-wlr",
